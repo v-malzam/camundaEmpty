@@ -18,7 +18,7 @@ public class PaysrvPaymentSendMessageDelegate implements JavaDelegate {
     public void execute(DelegateExecution execution) throws Exception {
         String messageName = (String) execution.getVariable("messageName");
         String variableValue = (String) execution.getVariable("uuidInvoice");
-        log.info("Starting correlation: messageName = {}, uuidInvoice = {}", messageName, variableValue);
+        log.info("paysrv Starting correlation: messageName = {}, uuidInvoice = {}", messageName, variableValue);
 
         List<MessageCorrelationResult> correlateResult = execution.getProcessEngineServices().getRuntimeService()
                 .createMessageCorrelation(messageName)
@@ -35,7 +35,7 @@ public class PaysrvPaymentSendMessageDelegate implements JavaDelegate {
         String reportCorrelate = "Количество корреляций - " + numCorrelate + ", UUID экземпляров процессов, принявших сообщение = " + listUuidCorrelate;
         execution.setVariable("sendTaskReport", reportCorrelate);
 
-        log.info("Finished correlation: messageName = {}, uuidInvoice = {}, numCorrelate = {}, listUuidCorrelate = {}"
+        log.info("paysrv Finished correlation: messageName = {}, uuidInvoice = {}, numCorrelate = {}, listUuidCorrelate = {}"
                 , messageName, variableValue, numCorrelate, listUuidCorrelate);
     }
 }
