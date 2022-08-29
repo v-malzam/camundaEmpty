@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0xrmudk"
+                  targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.2.0"
+                  modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
+    <bpmn:collaboration id="Collaboration_0ep98tn">
+        <bpmn:participant id="Participant_00cukc5" name="RunnerSendTask" processRef="RunnerSendTask"/>
+    </bpmn:collaboration>
+    <bpmn:process id="RunnerSendTask" name="RunnerSendTask" isExecutable="true">
+        <bpmn:startEvent id="StartEvent_1">
+            <bpmn:outgoing>Flow_0si9r8h</bpmn:outgoing>
+        </bpmn:startEvent>
+        <bpmn:endEvent id="Event_1u0yskx">
+            <bpmn:incoming>Flow_022s3bs</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:intermediateCatchEvent id="Event_02ly8ue">
+            <bpmn:incoming>Flow_0dq44t9</bpmn:incoming>
+            <bpmn:outgoing>Flow_022s3bs</bpmn:outgoing>
+            <bpmn:timerEventDefinition id="TimerEventDefinition_10t72ye">
+                <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P14D</bpmn:timeDuration>
+            </bpmn:timerEventDefinition>
+        </bpmn:intermediateCatchEvent>
+        <bpmn:sendTask id="SendTask_ElectronicInvoicePaid_07ysvex" name="Message Electronic Invoice Paid"
+                       camunda:delegateExpression="${paysrvPaymentSendMessageDelegate}">
+            <bpmn:extensionElements>
+                <camunda:inputOutput>
+                    <camunda:inputParameter name="messageName">
+                        Message_ElectronicInvoicePaid_to_process_paysrv_checkPaymentStatus
+                    </camunda:inputParameter>
+                    <camunda:inputParameter name="uuidInvoice">2</camunda:inputParameter>
+                </camunda:inputOutput>
+            </bpmn:extensionElements>
+            <bpmn:incoming>Flow_0si9r8h</bpmn:incoming>
+            <bpmn:outgoing>Flow_0dq44t9</bpmn:outgoing>
+        </bpmn:sendTask>
+        <bpmn:sequenceFlow id="Flow_022s3bs" sourceRef="Event_02ly8ue" targetRef="Event_1u0yskx"/>
+        <bpmn:sequenceFlow id="Flow_0dq44t9" sourceRef="SendTask_ElectronicInvoicePaid_07ysvex"
+                           targetRef="Event_02ly8ue"/>
+        <bpmn:sequenceFlow id="Flow_0si9r8h" sourceRef="StartEvent_1"
+                           targetRef="SendTask_ElectronicInvoicePaid_07ysvex"/>
+    </bpmn:process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+        <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0ep98tn">
+            <bpmndi:BPMNShape id="Participant_00cukc5_di" bpmnElement="Participant_00cukc5" isHorizontal="true">
+                <dc:Bounds x="160" y="80" width="600" height="250"/>
+                <bpmndi:BPMNLabel/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge id="Flow_022s3bs_di" bpmnElement="Flow_022s3bs">
+                <di:waypoint x="508" y="210"/>
+                <di:waypoint x="562" y="210"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="Flow_0dq44t9_di" bpmnElement="Flow_0dq44t9">
+                <di:waypoint x="420" y="210"/>
+                <di:waypoint x="472" y="210"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="Flow_0si9r8h_di" bpmnElement="Flow_0si9r8h">
+                <di:waypoint x="268" y="210"/>
+                <di:waypoint x="320" y="210"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+                <dc:Bounds x="232" y="192" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1u0yskx_di" bpmnElement="Event_1u0yskx">
+                <dc:Bounds x="562" y="192" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1envong_di" bpmnElement="Event_02ly8ue">
+                <dc:Bounds x="472" y="192" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Activity_1b3ojyd_di" bpmnElement="SendTask_ElectronicInvoicePaid_07ysvex">
+                <dc:Bounds x="320" y="170" width="100" height="80"/>
+                <bpmndi:BPMNLabel/>
+            </bpmndi:BPMNShape>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</bpmn:definitions>

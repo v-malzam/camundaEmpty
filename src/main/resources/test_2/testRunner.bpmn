@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1bj58ch"
+                  targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.2.0"
+                  modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
+    <bpmn:collaboration id="Collaboration_1a9cora">
+        <bpmn:participant id="Participant_0mlyumi" name="testRunner" processRef="testRunner"/>
+    </bpmn:collaboration>
+    <bpmn:process id="testRunner" name="testRunner" isExecutable="true">
+        <bpmn:sequenceFlow id="Flow_1qgcx2b" sourceRef="Activity_19b2cyh" targetRef="Event_1p38sw8"/>
+        <bpmn:sequenceFlow id="Flow_0j44mqa" sourceRef="StartEvent_1" targetRef="Event_1gxkmto"/>
+        <bpmn:userTask id="Activity_19b2cyh" name="Контроль результатов">
+            <bpmn:incoming>Flow_0dw53nn</bpmn:incoming>
+            <bpmn:outgoing>Flow_1qgcx2b</bpmn:outgoing>
+        </bpmn:userTask>
+        <bpmn:endEvent id="Event_1p38sw8">
+            <bpmn:incoming>Flow_1qgcx2b</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:startEvent id="StartEvent_1">
+            <bpmn:outgoing>Flow_0j44mqa</bpmn:outgoing>
+            <bpmn:messageEventDefinition id="MessageEventDefinition_0hopjmc" messageRef="Message_1jgfemn"/>
+        </bpmn:startEvent>
+        <bpmn:intermediateThrowEvent id="Event_1gxkmto">
+            <bpmn:incoming>Flow_0j44mqa</bpmn:incoming>
+            <bpmn:outgoing>Flow_0dw53nn</bpmn:outgoing>
+            <bpmn:messageEventDefinition id="MessageEventDefinition_020d9hj" messageRef="Message_10cj4o8"
+                                         camunda:expression="execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(execution.getCurrentActivityName()).processInstanceId(processInstanceIdtoMessage)).setVariable(&#34;firstName&#34;, firstName).setVariable(&#34;age&#34;, age).correlate();"/>
+        </bpmn:intermediateThrowEvent>
+        <bpmn:sequenceFlow id="Flow_0dw53nn" sourceRef="Event_1gxkmto" targetRef="Activity_19b2cyh"/>
+    </bpmn:process>
+    <bpmn:message id="Message_10cj4o8" name="testSendMessage"/>
+    <bpmn:message id="Message_1jgfemn" name="testRunnerCreate"/>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+        <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1a9cora">
+            <bpmndi:BPMNShape id="Participant_0mlyumi_di" bpmnElement="Participant_0mlyumi" isHorizontal="true">
+                <dc:Bounds x="160" y="80" width="1120" height="410"/>
+                <bpmndi:BPMNLabel/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge id="Flow_0dw53nn_di" bpmnElement="Flow_0dw53nn">
+                <di:waypoint x="408" y="287"/>
+                <di:waypoint x="480" y="287"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="Flow_0j44mqa_di" bpmnElement="Flow_0j44mqa">
+                <di:waypoint x="295" y="287"/>
+                <di:waypoint x="372" y="287"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="Flow_1qgcx2b_di" bpmnElement="Flow_1qgcx2b">
+                <di:waypoint x="580" y="287"/>
+                <di:waypoint x="652" y="287"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNShape id="Activity_1t909lj_di" bpmnElement="Activity_19b2cyh">
+                <dc:Bounds x="480" y="247" width="100" height="80"/>
+                <bpmndi:BPMNLabel/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1p38sw8_di" bpmnElement="Event_1p38sw8">
+                <dc:Bounds x="652" y="269" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1svyck1_di" bpmnElement="StartEvent_1">
+                <dc:Bounds x="259" y="269" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1r7z6vq_di" bpmnElement="Event_1gxkmto">
+                <dc:Bounds x="372" y="269" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</bpmn:definitions>
