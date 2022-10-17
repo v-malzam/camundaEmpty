@@ -51,13 +51,14 @@ public class MdmDelegate implements JavaDelegate {
 
         if (origin.equals("paysrv_invoices") && currentActivityId.equals("load_invoices_2")) {
 
-            if (uuid.equals("1")) {
-                result.add(new Invoice("3", "333333-validityPeriod", "333333-invoiceNumber", "333333-amount", "333333-currency",
-                        "333333-currency", "333333-paymentId"));
+            //if (uuid.equals("2") || uuid.equals("3")) {
+            if (uuid.equals("2")) {
+                result.add(new Invoice("2", "333333-validityPeriod", null, null, null, null, null));
             }
 
-            if (uuid.equals("2") || uuid.equals("3")) {
-                result.add(new Invoice("2", "333333-validityPeriod", null, null, null, null, null));
+            if (uuid.equals("3")) {
+                result.add(new Invoice("3", "333333-validityPeriod", "333333-invoiceNumber", "333333-amount", "333333-currency",
+                        "333333-currency", "333333-paymentId"));
             }
         }
 

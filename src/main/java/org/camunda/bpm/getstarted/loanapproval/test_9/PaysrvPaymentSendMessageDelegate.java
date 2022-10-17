@@ -1,5 +1,6 @@
 package org.camunda.bpm.getstarted.loanapproval.test_9;
 
+import groovy.json.JsonSlurperClassic;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
@@ -24,6 +25,8 @@ public class PaysrvPaymentSendMessageDelegate implements JavaDelegate {
                 .createMessageCorrelation(messageName)
                 .processInstanceVariableEquals("uuidInvoice", variableValue)
                 .correlateAllWithResult();
+
+        JsonSlurperClassic slurper = new groovy.json.JsonSlurperClassic();
 
         //Report
         Integer numCorrelate = correlateResult.size();
