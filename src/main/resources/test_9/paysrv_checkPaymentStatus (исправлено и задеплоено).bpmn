@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0citg1z" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.2.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:collaboration id="Collaboration_1532pqc">
+    <bpmn:extensionElements />
+    <bpmn:participant id="Participant_11ijsnw" name="Проверка статуса оплаты" processRef="paysrv_checkPaymentStatus" />
+  </bpmn:collaboration>
+  <bpmn:process id="paysrv_checkPaymentStatus" name="paysrv_checkPaymentStatus" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_1i8ge1t</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="load_invoices" name="Запросить данные Электронного счета" camunda:delegateExpression="${mdmDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="outputName">paysrv_invoices</camunda:inputParameter>
+          <camunda:inputParameter name="filterMap">
+            <camunda:map>
+              <camunda:entry key="uuid">${uuidInvoice}</camunda:entry>
+            </camunda:map>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="action">list</camunda:inputParameter>
+          <camunda:inputParameter name="origin">paysrv_invoices</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1i8ge1t</bpmn:incoming>
+      <bpmn:outgoing>Flow_0cf78bm</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:scriptTask id="Activity_11wdn2u" name="Извлечь атрибуты  size, status и validityPeriod" scriptFormat="groovy">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_0cf78bm</bpmn:incoming>
+      <bpmn:outgoing>Flow_0tme6sw</bpmn:outgoing>
+      <bpmn:script>def size = execution.getVariable('paysrv_invoices').size()
+                if (size &gt; 0){
+                execution.setVariable('status', execution.getVariable('paysrv_invoices')[0].status)
+                execution.setVariable('validityPeriod', execution.getVariable('paysrv_invoices')[0].validityPeriod)
+                }
+                execution.setVariable('size', size)
+            </bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:exclusiveGateway id="Gateway_17iu1fb" default="Flow_14cv48e">
+      <bpmn:incoming>Flow_0tme6sw</bpmn:incoming>
+      <bpmn:outgoing>Flow_0mvs7qr</bpmn:outgoing>
+      <bpmn:outgoing>Flow_14cv48e</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:receiveTask id="Activity_00i3n4z" name="Ожидание от BP_5 Сообщения об оплате" messageRef="Message_3i2qfml">
+      <bpmn:incoming>Flow_001lt38</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ov9di3</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:exclusiveGateway id="Gateway_1ie1im6">
+      <bpmn:incoming>Flow_1ov9di3</bpmn:incoming>
+      <bpmn:incoming>Flow_12ypudp</bpmn:incoming>
+      <bpmn:outgoing>Flow_0lmg5jb</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_1" default="Flow_001lt38">
+      <bpmn:incoming>Flow_0mvs7qr</bpmn:incoming>
+      <bpmn:outgoing>Flow_11jhffd</bpmn:outgoing>
+      <bpmn:outgoing>Flow_001lt38</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="load_invoices_2" name="Повторно запросить данные Электронного счета" camunda:delegateExpression="${mdmDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="outputName">paysrv_invoices</camunda:inputParameter>
+          <camunda:inputParameter name="filterMap">
+            <camunda:map>
+              <camunda:entry key="uuid">${uuidInvoice}</camunda:entry>
+            </camunda:map>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="action">list</camunda:inputParameter>
+          <camunda:inputParameter name="origin">paysrv_invoices</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0lmg5jb</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ra9gfn</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:scriptTask id="Activity_1yfyge2" name="Актуализировать атрибуты status и validityPeriod" scriptFormat="groovy">
+      <bpmn:incoming>Flow_1ra9gfn</bpmn:incoming>
+      <bpmn:outgoing>Flow_181pbd6</bpmn:outgoing>
+      <bpmn:script>execution.setVariable('status', execution.getVariable('paysrv_invoices')[0].status)
+                execution.setVariable('validityPeriod', execution.getVariable('paysrv_invoices')[0].validityPeriod)
+            </bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:exclusiveGateway id="Gateway_2" default="Flow_0oi4urk">
+      <bpmn:incoming>Flow_181pbd6</bpmn:incoming>
+      <bpmn:outgoing>Flow_086ziei</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0oi4urk</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_1lsxwd4">
+      <bpmn:incoming>Flow_086ziei</bpmn:incoming>
+      <bpmn:incoming>Flow_11jhffd</bpmn:incoming>
+      <bpmn:outgoing>Flow_1eogiud</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:scriptTask id="Activity_0vs038l" name="Извлечь атрибут paymentId" scriptFormat="groovy">
+      <bpmn:incoming>Flow_1eogiud</bpmn:incoming>
+      <bpmn:outgoing>Flow_09yjd7n</bpmn:outgoing>
+      <bpmn:script>execution.setVariable('paymentId', execution.getVariable('paysrv_invoices')[0].paymentId)
+            </bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:serviceTask id="Load_payments" name="Запросить Информацию об оплате" camunda:delegateExpression="${mdmDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="origin">paysrv_payments</camunda:inputParameter>
+          <camunda:inputParameter name="action">list</camunda:inputParameter>
+          <camunda:inputParameter name="filterMap">
+            <camunda:map>
+              <camunda:entry key="uuid">${paymentId}</camunda:entry>
+            </camunda:map>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="outputName">paysrv_payments</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_09yjd7n</bpmn:incoming>
+      <bpmn:outgoing>Flow_07jslt2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:scriptTask id="Activity_1ses1s5" name="Константы для сообщения об ошибке Электронный счет не найден" scriptFormat="groovy">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_14cv48e</bpmn:incoming>
+      <bpmn:outgoing>Flow_1pdrztl</bpmn:outgoing>
+      <bpmn:script>execution.setVariable('codeError', '12')
+                execution.setVariable('descriptionError', 'По указанному идентификатору счет не найден')
+            </bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:scriptTask id="Activity_1ufdrln" name="Извлечь атрибуты для сообщения Электронный счет оплачен" scriptFormat="groovy">
+      <bpmn:incoming>Flow_07jslt2</bpmn:incoming>
+      <bpmn:outgoing>Flow_12w3qpf</bpmn:outgoing>
+      <bpmn:script>// status и validityPeriod извлекаются в контекст в двух задачах:
+// - "Получить данные Электронного счета"
+// - "Повторно получить данные Электронного счета"
+
+execution.setVariable('invoiceId', execution.getVariable('paysrv_invoices')[0].invoiceNumber)
+execution.setVariable('amount', execution.getVariable('paysrv_invoices')[0].amount)
+execution.setVariable('currency', execution.getVariable('paysrv_invoices')[0].currency)
+execution.setVariable('purpose', execution.getVariable('paysrv_invoices')[0].invoicePurpose)
+
+execution.setVariable('operationId', execution.getVariable('paysrv_payments')[0].operationId)
+execution.setVariable('paymentDate', execution.getVariable('paysrv_payments')[0].paymentDate)
+execution.setVariable('payerName', execution.getVariable('paysrv_payments')[0].payerName)
+execution.setVariable('payerInn', execution.getVariable('paysrv_payments')[0].payerInn)
+execution.setVariable('payerKpp', execution.getVariable('paysrv_payments')[0].payerKpp)
+execution.setVariable('payerBankBiC', execution.getVariable('paysrv_payments')[0].payerBankBiC)
+execution.setVariable('payerBankName', execution.getVariable('paysrv_payments')[0].payerBankName)
+execution.setVariable('payerBankAcc', execution.getVariable('paysrv_payments')[0].payerBankAcc)
+execution.setVariable('payerBankCorr', execution.getVariable('paysrv_payments')[0].payerBankCorr)
+execution.setVariable('payeeName', execution.getVariable('paysrv_payments')[0].payeeName)
+execution.setVariable('payeeInn', execution.getVariable('paysrv_payments')[0].payeeInn)
+execution.setVariable('payeeKpp', execution.getVariable('paysrv_payments')[0].payeeKpp)
+execution.setVariable('payeeBankBiC', execution.getVariable('paysrv_payments')[0].payeeBankBiC)
+execution.setVariable('payeeBankName', execution.getVariable('paysrv_payments')[0].payeeBankName)
+execution.setVariable('payeeBankAcc', execution.getVariable('paysrv_payments')[0].payeeBankAcc)
+execution.setVariable('payeeBankCorr', execution.getVariable('paysrv_payments')[0].payeeBankCorr)
+</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:exclusiveGateway id="Gateway_1sh4khz">
+      <bpmn:incoming>Flow_12w3qpf</bpmn:incoming>
+      <bpmn:incoming>Flow_0oi4urk</bpmn:incoming>
+      <bpmn:incoming>Flow_1pdrztl</bpmn:incoming>
+      <bpmn:outgoing>Flow_07skm3k</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Event_1tc67ke">
+      <bpmn:incoming>Flow_07skm3k</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="Event_08mj8dx" name="Истек срока действия счета (validityPeriod)" attachedToRef="Activity_00i3n4z">
+      <bpmn:outgoing>Flow_12ypudp</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_05qbmts">
+        <bpmn:timeDate xsi:type="bpmn:tFormalExpression">${validityPeriod}</bpmn:timeDate>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_1pdrztl" sourceRef="Activity_1ses1s5" targetRef="Gateway_1sh4khz" />
+    <bpmn:sequenceFlow id="Flow_1eogiud" sourceRef="Gateway_1lsxwd4" targetRef="Activity_0vs038l" />
+    <bpmn:sequenceFlow id="Flow_0oi4urk" sourceRef="Gateway_2" targetRef="Gateway_1sh4khz" />
+    <bpmn:sequenceFlow id="Flow_1ra9gfn" sourceRef="load_invoices_2" targetRef="Activity_1yfyge2" />
+    <bpmn:sequenceFlow id="Flow_181pbd6" sourceRef="Activity_1yfyge2" targetRef="Gateway_2" />
+    <bpmn:sequenceFlow id="Flow_12w3qpf" sourceRef="Activity_1ufdrln" targetRef="Gateway_1sh4khz" />
+    <bpmn:sequenceFlow id="Flow_07skm3k" sourceRef="Gateway_1sh4khz" targetRef="Event_1tc67ke" />
+    <bpmn:sequenceFlow id="Flow_07jslt2" sourceRef="Load_payments" targetRef="Activity_1ufdrln" />
+    <bpmn:sequenceFlow id="Flow_09yjd7n" sourceRef="Activity_0vs038l" targetRef="Load_payments" />
+    <bpmn:sequenceFlow id="Flow_0tme6sw" sourceRef="Activity_11wdn2u" targetRef="Gateway_17iu1fb" />
+    <bpmn:sequenceFlow id="Flow_0mvs7qr" sourceRef="Gateway_17iu1fb" targetRef="Gateway_1">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${size &gt; 0}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0lmg5jb" sourceRef="Gateway_1ie1im6" targetRef="load_invoices_2" />
+    <bpmn:sequenceFlow id="Flow_12ypudp" sourceRef="Event_08mj8dx" targetRef="Gateway_1ie1im6" />
+    <bpmn:sequenceFlow id="Flow_1ov9di3" sourceRef="Activity_00i3n4z" targetRef="Gateway_1ie1im6" />
+    <bpmn:sequenceFlow id="Flow_11jhffd" name="Счет существует и оплачен  (status = 3)" sourceRef="Gateway_1" targetRef="Gateway_1lsxwd4">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${status == 3}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_001lt38" name="Счет существует но не оплачен" sourceRef="Gateway_1" targetRef="Activity_00i3n4z" />
+    <bpmn:sequenceFlow id="Flow_086ziei" name="Счет оплачен (status = 3)" sourceRef="Gateway_2" targetRef="Gateway_1lsxwd4">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${status == 3}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_14cv48e" name="Счет не найден (size = 0)" sourceRef="Gateway_17iu1fb" targetRef="Activity_1ses1s5" />
+    <bpmn:sequenceFlow id="Flow_1i8ge1t" sourceRef="StartEvent_1" targetRef="load_invoices" />
+    <bpmn:sequenceFlow id="Flow_0cf78bm" sourceRef="load_invoices" targetRef="Activity_11wdn2u" />
+    <bpmn:textAnnotation id="TextAnnotation_03e4dko">
+      <bpmn:text>На вход передается UUID электронного счета</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:textAnnotation id="TextAnnotation_1kygoqa">
+      <bpmn:text>paysrv_invoices MDM</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:textAnnotation id="TextAnnotation_0pqbu5g">
+      <bpmn:text>paysrv_invoices MDM</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:textAnnotation id="TextAnnotation_00qawar">
+      <bpmn:text>Атрибуты для сообщения Электронный счет не оплачен (status и validityPeriod) уже извлечены и не                требуют отдельной задачи</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:textAnnotation id="TextAnnotation_1jz27vm">
+      <bpmn:text>paysrv_payments MDM</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_055ondq" sourceRef="StartEvent_1" targetRef="TextAnnotation_03e4dko" />
+    <bpmn:association id="Association_10iycmi" sourceRef="load_invoices" targetRef="TextAnnotation_1kygoqa" />
+    <bpmn:association id="Association_0lb5gzd" sourceRef="load_invoices_2" targetRef="TextAnnotation_0pqbu5g" />
+    <bpmn:association id="Association_0br15sp" sourceRef="Gateway_2" targetRef="TextAnnotation_00qawar" />
+    <bpmn:association id="Association_0y1dc4z" sourceRef="Load_payments" targetRef="TextAnnotation_1jz27vm" />
+  </bpmn:process>
+  <bpmn:message id="Message_0o8u79b" />
+  <bpmn:message id="Message_3i2qfml" name="Message_ElectronicInvoicePaid_to_process_paysrv_checkPaymentStatus" />
+  <bpmn:message id="Message_2aka89i" name="Message_2aka89i" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1532pqc">
+      <bpmndi:BPMNShape id="Participant_11ijsnw_di" bpmnElement="Participant_11ijsnw" isHorizontal="true">
+        <dc:Bounds x="150" y="60" width="2205" height="510" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0cf78bm_di" bpmnElement="Flow_0cf78bm">
+        <di:waypoint x="440" y="340" />
+        <di:waypoint x="510" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1i8ge1t_di" bpmnElement="Flow_1i8ge1t">
+        <di:waypoint x="268" y="340" />
+        <di:waypoint x="340" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14cv48e_di" bpmnElement="Flow_14cv48e">
+        <di:waypoint x="700" y="365" />
+        <di:waypoint x="700" y="470" />
+        <di:waypoint x="1970" y="470" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="660" y="378" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_086ziei_di" bpmnElement="Flow_086ziei">
+        <di:waypoint x="1540" y="235" />
+        <di:waypoint x="1540" y="315" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1505" y="243" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_001lt38_di" bpmnElement="Flow_001lt38">
+        <di:waypoint x="810" y="315" />
+        <di:waypoint x="810" y="210" />
+        <di:waypoint x="900" y="210" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="803" y="181" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11jhffd_di" bpmnElement="Flow_11jhffd">
+        <di:waypoint x="835" y="340" />
+        <di:waypoint x="1515" y="340" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="835" y="299" width="87" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ov9di3_di" bpmnElement="Flow_1ov9di3">
+        <di:waypoint x="1000" y="210" />
+        <di:waypoint x="1065" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12ypudp_di" bpmnElement="Flow_12ypudp">
+        <di:waypoint x="950" y="152" />
+        <di:waypoint x="950" y="140" />
+        <di:waypoint x="1090" y="140" />
+        <di:waypoint x="1090" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0lmg5jb_di" bpmnElement="Flow_0lmg5jb">
+        <di:waypoint x="1115" y="210" />
+        <di:waypoint x="1181" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mvs7qr_di" bpmnElement="Flow_0mvs7qr">
+        <di:waypoint x="725" y="340" />
+        <di:waypoint x="785" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tme6sw_di" bpmnElement="Flow_0tme6sw">
+        <di:waypoint x="610" y="340" />
+        <di:waypoint x="675" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09yjd7n_di" bpmnElement="Flow_09yjd7n">
+        <di:waypoint x="1731" y="340" />
+        <di:waypoint x="1800" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07jslt2_di" bpmnElement="Flow_07jslt2">
+        <di:waypoint x="1900" y="340" />
+        <di:waypoint x="1970" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07skm3k_di" bpmnElement="Flow_07skm3k">
+        <di:waypoint x="2185" y="340" />
+        <di:waypoint x="2252" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12w3qpf_di" bpmnElement="Flow_12w3qpf">
+        <di:waypoint x="2070" y="340" />
+        <di:waypoint x="2135" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_181pbd6_di" bpmnElement="Flow_181pbd6">
+        <di:waypoint x="1450" y="210" />
+        <di:waypoint x="1515" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ra9gfn_di" bpmnElement="Flow_1ra9gfn">
+        <di:waypoint x="1281" y="210" />
+        <di:waypoint x="1350" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0oi4urk_di" bpmnElement="Flow_0oi4urk">
+        <di:waypoint x="1565" y="210" />
+        <di:waypoint x="2160" y="210" />
+        <di:waypoint x="2160" y="315" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1eogiud_di" bpmnElement="Flow_1eogiud">
+        <di:waypoint x="1565" y="340" />
+        <di:waypoint x="1631" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1pdrztl_di" bpmnElement="Flow_1pdrztl">
+        <di:waypoint x="2070" y="470" />
+        <di:waypoint x="2160" y="470" />
+        <di:waypoint x="2160" y="365" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="232" y="322" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_05xvc8k_di" bpmnElement="load_invoices">
+        <dc:Bounds x="340" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_07nuac4_di" bpmnElement="Activity_11wdn2u">
+        <dc:Bounds x="510" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_17iu1fb_di" bpmnElement="Gateway_17iu1fb" isMarkerVisible="true">
+        <dc:Bounds x="675" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ceqjkh_di" bpmnElement="Activity_00i3n4z">
+        <dc:Bounds x="900" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1ie1im6_di" bpmnElement="Gateway_1ie1im6" isMarkerVisible="true">
+        <dc:Bounds x="1065" y="185" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0efqnvx_di" bpmnElement="Gateway_1" isMarkerVisible="true">
+        <dc:Bounds x="785" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1iybbfb_di" bpmnElement="load_invoices_2">
+        <dc:Bounds x="1181" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1db11kl_di" bpmnElement="Activity_1yfyge2">
+        <dc:Bounds x="1350" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1b6rpcl_di" bpmnElement="Gateway_2" isMarkerVisible="true">
+        <dc:Bounds x="1515" y="185" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1lsxwd4_di" bpmnElement="Gateway_1lsxwd4" isMarkerVisible="true">
+        <dc:Bounds x="1515" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_12aws5n_di" bpmnElement="Activity_0vs038l">
+        <dc:Bounds x="1631" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0mg88vs_di" bpmnElement="Load_payments">
+        <dc:Bounds x="1800" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ses1s5_di" bpmnElement="Activity_1ses1s5">
+        <dc:Bounds x="1970" y="430" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ufdrln_di" bpmnElement="Activity_1ufdrln">
+        <dc:Bounds x="1970" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1sh4khz_di" bpmnElement="Gateway_1sh4khz" isMarkerVisible="true">
+        <dc:Bounds x="2135" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1tc67ke_di" bpmnElement="Event_1tc67ke">
+        <dc:Bounds x="2252" y="322" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_03e4dko_di" bpmnElement="TextAnnotation_03e4dko">
+        <dc:Bounds x="200" y="380" width="120" height="53" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1kygoqa_di" bpmnElement="TextAnnotation_1kygoqa">
+        <dc:Bounds x="340" y="398" width="110" height="39" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0pqbu5g_di" bpmnElement="TextAnnotation_0pqbu5g">
+        <dc:Bounds x="1181" y="264" width="100" height="39" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_00qawar_di" bpmnElement="TextAnnotation_00qawar">
+        <dc:Bounds x="1594" y="144" width="370" height="39" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1jz27vm_di" bpmnElement="TextAnnotation_1jz27vm">
+        <dc:Bounds x="1797" y="399" width="110" height="39" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1wjfrwb_di" bpmnElement="Event_08mj8dx">
+        <dc:Bounds x="932" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="952" y="98" width="78" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_055ondq_di" bpmnElement="Association_055ondq">
+        <di:waypoint x="251" y="358" />
+        <di:waypoint x="251" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_10iycmi_di" bpmnElement="Association_10iycmi">
+        <di:waypoint x="390" y="380" />
+        <di:waypoint x="390" y="398" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0lb5gzd_di" bpmnElement="Association_0lb5gzd">
+        <di:waypoint x="1231" y="250" />
+        <di:waypoint x="1231" y="264" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0br15sp_di" bpmnElement="Association_0br15sp">
+        <di:waypoint x="1554" y="199" />
+        <di:waypoint x="1594" y="176" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0y1dc4z_di" bpmnElement="Association_0y1dc4z">
+        <di:waypoint x="1854" y="380" />
+        <di:waypoint x="1856" y="399" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

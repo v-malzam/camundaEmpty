@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1o0lkp5" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.2.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
+  <bpmn:collaboration id="Collaboration_1867988">
+    <bpmn:participant id="Participant_0jb82ym" name="Запрос статуса платежа при оплате банковской картой" processRef="paysrv_paymentStatusCard" />
+  </bpmn:collaboration>
+  <bpmn:process id="paysrv_paymentStatusCard" name="paysrv_paymentStatusCard" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:extensionElements />
+      <bpmn:outgoing>Flow_0f00y4p</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="Gateway_1l4bpbe">
+      <bpmn:incoming>Flow_1g14esd</bpmn:incoming>
+      <bpmn:incoming>Flow_0v4qb36</bpmn:incoming>
+      <bpmn:outgoing>Flow_12r6wc3</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Activity_04xdk0t" name="Получить статус платежа,  Сохранить в Начисления" camunda:delegateExpression="${paysrvPaymentMobiPaymentInfoDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="paymentID">${paymentID}</camunda:inputParameter>
+          <camunda:inputParameter name="uuid">${uuid}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_11a10vl</bpmn:incoming>
+      <bpmn:outgoing>Flow_1lxi199</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="Event_1jb5yq0">
+      <bpmn:incoming>Flow_1pcegso</bpmn:incoming>
+      <bpmn:outgoing>Flow_1sd4spn</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0lut7sw">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT15M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="Gateway_1qyrxsw" default="Flow_1g14esd">
+      <bpmn:incoming>Flow_05bqk4h</bpmn:incoming>
+      <bpmn:outgoing>Flow_1pcegso</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1g14esd</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_0585egb" default="Flow_05bqk4h">
+      <bpmn:incoming>Flow_1lxi199</bpmn:incoming>
+      <bpmn:outgoing>Flow_1615zc6</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1kebw21</bpmn:outgoing>
+      <bpmn:outgoing>Flow_05bqk4h</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_1fff6zx" default="Flow_0y9k3l8">
+      <bpmn:incoming>Flow_1kpfezm</bpmn:incoming>
+      <bpmn:outgoing>Flow_0y9qxh6</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0y9k3l8</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Activity_1nfpcvj" name="Запросить  e-mail руководителя организации MDM / org" camunda:delegateExpression="${mdmDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="origin">org</camunda:inputParameter>
+          <camunda:inputParameter name="action">listDetail</camunda:inputParameter>
+          <camunda:inputParameter name="parentUuid">${client}</camunda:inputParameter>
+          <camunda:inputParameter name="outputName">objDetail_org_contactsByEmail</camunda:inputParameter>
+          <camunda:inputParameter name="showDetails">1</camunda:inputParameter>
+          <camunda:inputParameter name="showRefs">3</camunda:inputParameter>
+          <camunda:inputParameter name="detail">4480b4b0-2387-4cb7-9c2e-2b3b47e093f7</camunda:inputParameter>
+          <camunda:inputParameter name="filterMap">
+            <camunda:map>
+              <camunda:entry key="wo_email">null</camunda:entry>
+            </camunda:map>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+        <camunda:executionListener event="end">
+          <camunda:script scriptFormat="groovy">def targetRole = "exporter_topmanager"
+def personListFiltered = objDetail_org_contactsByEmail.findAll{it.personId != null &amp;&amp; it.personId.userLink != null}
+def emailContact = ""
+def role = ""
+
+for(person in personListFiltered){
+        for (orgRolesUIDM in person.personId.userLink.orgRolesUIDM){
+            role = orgRolesUIDM.orgRoleCode.role
+            if(role == targetRole){
+                emailContact = person.email
+                break
+            }
+        }
+    if(role == targetRole) break
+}
+execution.setVariable('emailContact', emailContact)</camunda:script>
+        </camunda:executionListener>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1615zc6</bpmn:incoming>
+      <bpmn:outgoing>Flow_1kpfezm</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:scriptTask id="Activity_19lhizq" name="Сформировать параметры почтового уведомления" scriptFormat="groovy">
+      <bpmn:incoming>Flow_0y9qxh6</bpmn:incoming>
+      <bpmn:outgoing>Flow_0qi95rn</bpmn:outgoing>
+      <bpmn:script>// Тема email
+def subject = "Уведомление об оплате начисления"
+execution.setVariable('subject', subject)
+
+// Текст email
+def message = ""
+def messageDate = new Date().format("dd.MM.yyyy");
+def supplierBillId = execution.getVariable('object_paysrv_charges').supplierBillId
+
+if(status.equals("20")){
+    message =
+	"${messageDate} Платеж по начислению ${supplierBillId} успешно принят. " +
+	"Сообщение сформировано автоматически. Отвечать на него не требуется."
+}
+
+if(status.equals("30")){
+    message =
+	"${messageDate} Платеж по начислению ${supplierBillId} отклонен. " +
+	"Сообщение сформировано автоматически. Отвечать на него не требуется."
+}
+execution.setVariable('message', message)</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:serviceTask id="Activity_1nut1ee" name="Сформировать почтовое уведомление" camunda:class="ru.seventech.camunda.serviceTask.EmailNotifyDelegate">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="transport_type">email</camunda:inputParameter>
+          <camunda:inputParameter name="to">${execution.getVariable('emailContact')}</camunda:inputParameter>
+          <camunda:inputParameter name="subject">${execution.getVariable('subject')}</camunda:inputParameter>
+          <camunda:inputParameter name="message">${execution.getVariable('message')}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0qi95rn</bpmn:incoming>
+      <bpmn:outgoing>Flow_0j890fw</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_18xj2zi">
+      <bpmn:incoming>Flow_0o4otit</bpmn:incoming>
+      <bpmn:incoming>Flow_1sw0e71</bpmn:incoming>
+      <bpmn:outgoing>Flow_0v2x4yf</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_1exwcdt">
+      <bpmn:incoming>Flow_0v2x4yf</bpmn:incoming>
+      <bpmn:incoming>Flow_0uvdusn</bpmn:incoming>
+      <bpmn:incoming>Flow_1sd4spn</bpmn:incoming>
+      <bpmn:outgoing>Flow_03xtsx6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Event_06pug5z">
+      <bpmn:incoming>Flow_03xtsx6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:intermediateCatchEvent id="Event_0l4fayv">
+      <bpmn:incoming>Flow_0j890fw</bpmn:incoming>
+      <bpmn:outgoing>Flow_1sw0e71</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1jljsyz">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT15M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Event_1xxg6ja">
+      <bpmn:incoming>Flow_0y9k3l8</bpmn:incoming>
+      <bpmn:outgoing>Flow_0o4otit</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1qzy2ln">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT15M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Event_098ex71">
+      <bpmn:incoming>Flow_1kebw21</bpmn:incoming>
+      <bpmn:outgoing>Flow_0uvdusn</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0cdlzyv">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT15M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Event_0z78cke" name="Периодичность запросов">
+      <bpmn:extensionElements>
+        <camunda:executionListener expression="${numIteration + 1}" event="end" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_12r6wc3</bpmn:incoming>
+      <bpmn:outgoing>Flow_11a10vl</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_185xecr">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT10S</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:scriptTask id="Activity_0p3xw1t" name="Настройки" scriptFormat="groovy">
+      <bpmn:incoming>Flow_0f00y4p</bpmn:incoming>
+      <bpmn:outgoing>Flow_0v4qb36</bpmn:outgoing>
+      <bpmn:script>// Настройка времени ожидания (складываются Minutes и Seconds)
+def waitMinutes = 1
+def waitSeconds = 0
+
+// Скрипт
+def targetWaitingTime = new Date()
+ use (groovy.time.TimeCategory) {
+     targetWaitingTime = targetWaitingTime + waitMinutes.minutes + waitSeconds.seconds
+ }
+execution.setVariable('targetWaitingTime', targetWaitingTime)
+
+//Инициализация тестового счетчика итераций
+def numIteration = 0
+execution.setVariable('numIteration', numIteration)
+</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_0f00y4p" sourceRef="StartEvent_1" targetRef="Activity_0p3xw1t" />
+    <bpmn:sequenceFlow id="Flow_1kpfezm" sourceRef="Activity_1nfpcvj" targetRef="Gateway_1fff6zx" />
+    <bpmn:sequenceFlow id="Flow_0v4qb36" sourceRef="Activity_0p3xw1t" targetRef="Gateway_1l4bpbe" />
+    <bpmn:sequenceFlow id="Flow_11a10vl" sourceRef="Event_0z78cke" targetRef="Activity_04xdk0t" />
+    <bpmn:sequenceFlow id="Flow_12r6wc3" sourceRef="Gateway_1l4bpbe" targetRef="Event_0z78cke" />
+    <bpmn:sequenceFlow id="Flow_1g14esd" sourceRef="Gateway_1qyrxsw" targetRef="Gateway_1l4bpbe" />
+    <bpmn:sequenceFlow id="Flow_1lxi199" sourceRef="Activity_04xdk0t" targetRef="Gateway_0585egb" />
+    <bpmn:sequenceFlow id="Flow_1pcegso" name="Истек срок ожидания" sourceRef="Gateway_1qyrxsw" targetRef="Event_1jb5yq0">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${now() &gt; targetWaitingTime}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_05bqk4h" sourceRef="Gateway_0585egb" targetRef="Gateway_1qyrxsw" />
+    <bpmn:sequenceFlow id="Flow_1kebw21" name="status =  40" sourceRef="Gateway_0585egb" targetRef="Event_098ex71">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${status == 40}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_03xtsx6" sourceRef="Gateway_1exwcdt" targetRef="Event_06pug5z" />
+    <bpmn:sequenceFlow id="Flow_1sd4spn" sourceRef="Event_1jb5yq0" targetRef="Gateway_1exwcdt" />
+    <bpmn:sequenceFlow id="Flow_0uvdusn" sourceRef="Event_098ex71" targetRef="Gateway_1exwcdt" />
+    <bpmn:sequenceFlow id="Flow_0v2x4yf" sourceRef="Gateway_18xj2zi" targetRef="Gateway_1exwcdt" />
+    <bpmn:sequenceFlow id="Flow_1sw0e71" sourceRef="Event_0l4fayv" targetRef="Gateway_18xj2zi" />
+    <bpmn:sequenceFlow id="Flow_0o4otit" sourceRef="Event_1xxg6ja" targetRef="Gateway_18xj2zi" />
+    <bpmn:sequenceFlow id="Flow_0j890fw" sourceRef="Activity_1nut1ee" targetRef="Event_0l4fayv" />
+    <bpmn:sequenceFlow id="Flow_0qi95rn" sourceRef="Activity_19lhizq" targetRef="Activity_1nut1ee" />
+    <bpmn:sequenceFlow id="Flow_0y9k3l8" sourceRef="Gateway_1fff6zx" targetRef="Event_1xxg6ja" />
+    <bpmn:sequenceFlow id="Flow_0y9qxh6" name="Найден email " sourceRef="Gateway_1fff6zx" targetRef="Activity_19lhizq">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${emailContact != null &amp;&amp; emailContact != "null" &amp;&amp; !emailContact.isEmpty()}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1615zc6" name="status =  20 или 30" sourceRef="Gateway_0585egb" targetRef="Activity_1nfpcvj">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${status == 20 || status == 30}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:textAnnotation id="TextAnnotation_1cvg4um">
+      <bpmn:text>status 20 - платеж принят
+status 30 - платеж отклонен</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_15p25x8" sourceRef="Activity_19lhizq" targetRef="TextAnnotation_1cvg4um" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1867988">
+      <bpmndi:BPMNShape id="Participant_0jb82ym_di" bpmnElement="Participant_0jb82ym" isHorizontal="true">
+        <dc:Bounds x="129" y="80" width="1651" height="460" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1615zc6_di" bpmnElement="Flow_1615zc6">
+        <di:waypoint x="830" y="325" />
+        <di:waypoint x="830" y="270" />
+        <di:waypoint x="900" y="270" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="834" y="242" width="50" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0y9qxh6_di" bpmnElement="Flow_0y9qxh6">
+        <di:waypoint x="1090" y="245" />
+        <di:waypoint x="1090" y="190" />
+        <di:waypoint x="1160" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1050" y="226" width="69" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0y9k3l8_di" bpmnElement="Flow_0y9k3l8">
+        <di:waypoint x="1115" y="270" />
+        <di:waypoint x="1392" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qi95rn_di" bpmnElement="Flow_0qi95rn">
+        <di:waypoint x="1260" y="190" />
+        <di:waypoint x="1330" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0j890fw_di" bpmnElement="Flow_0j890fw">
+        <di:waypoint x="1430" y="190" />
+        <di:waypoint x="1482" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0o4otit_di" bpmnElement="Flow_0o4otit">
+        <di:waypoint x="1428" y="270" />
+        <di:waypoint x="1475" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1sw0e71_di" bpmnElement="Flow_1sw0e71">
+        <di:waypoint x="1500" y="208" />
+        <di:waypoint x="1500" y="245" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0v2x4yf_di" bpmnElement="Flow_0v2x4yf">
+        <di:waypoint x="1525" y="270" />
+        <di:waypoint x="1590" y="270" />
+        <di:waypoint x="1590" y="325" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0uvdusn_di" bpmnElement="Flow_0uvdusn">
+        <di:waypoint x="1518" y="350" />
+        <di:waypoint x="1565" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1sd4spn_di" bpmnElement="Flow_1sd4spn">
+        <di:waypoint x="1518" y="432" />
+        <di:waypoint x="1590" y="432" />
+        <di:waypoint x="1590" y="375" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03xtsx6_di" bpmnElement="Flow_03xtsx6">
+        <di:waypoint x="1615" y="350" />
+        <di:waypoint x="1682" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1kebw21_di" bpmnElement="Flow_1kebw21">
+        <di:waypoint x="855" y="350" />
+        <di:waypoint x="1482" y="350" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="862" y="332" width="55" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05bqk4h_di" bpmnElement="Flow_05bqk4h">
+        <di:waypoint x="830" y="375" />
+        <di:waypoint x="830" y="432" />
+        <di:waypoint x="875" y="432" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1pcegso_di" bpmnElement="Flow_1pcegso">
+        <di:waypoint x="925" y="432" />
+        <di:waypoint x="1482" y="432" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="931" y="406" width="57" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1lxi199_di" bpmnElement="Flow_1lxi199">
+        <di:waypoint x="750" y="350" />
+        <di:waypoint x="805" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1g14esd_di" bpmnElement="Flow_1g14esd">
+        <di:waypoint x="900" y="457" />
+        <di:waypoint x="900" y="490" />
+        <di:waypoint x="470" y="490" />
+        <di:waypoint x="470" y="375" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12r6wc3_di" bpmnElement="Flow_12r6wc3">
+        <di:waypoint x="495" y="350" />
+        <di:waypoint x="552" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11a10vl_di" bpmnElement="Flow_11a10vl">
+        <di:waypoint x="588" y="350" />
+        <di:waypoint x="650" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0v4qb36_di" bpmnElement="Flow_0v4qb36">
+        <di:waypoint x="390" y="350" />
+        <di:waypoint x="445" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1kpfezm_di" bpmnElement="Flow_1kpfezm">
+        <di:waypoint x="1000" y="270" />
+        <di:waypoint x="1065" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0f00y4p_di" bpmnElement="Flow_0f00y4p">
+        <di:waypoint x="238" y="350" />
+        <di:waypoint x="290" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="202" y="332" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1l4bpbe_di" bpmnElement="Gateway_1l4bpbe" isMarkerVisible="true">
+        <dc:Bounds x="445" y="325" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1n0xcxc_di" bpmnElement="Activity_04xdk0t">
+        <dc:Bounds x="650" y="310" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1dcy0zr_di" bpmnElement="Event_1jb5yq0">
+        <dc:Bounds x="1482" y="414" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1qyrxsw_di" bpmnElement="Gateway_1qyrxsw" isMarkerVisible="true">
+        <dc:Bounds x="875" y="407" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0585egb_di" bpmnElement="Gateway_0585egb" isMarkerVisible="true">
+        <dc:Bounds x="805" y="325" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1fff6zx_di" bpmnElement="Gateway_1fff6zx" isMarkerVisible="true">
+        <dc:Bounds x="1065" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0u1khy8_di" bpmnElement="Activity_1nfpcvj">
+        <dc:Bounds x="900" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1nsem35_di" bpmnElement="Activity_19lhizq">
+        <dc:Bounds x="1160" y="150" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_08c5bwe_di" bpmnElement="Activity_1nut1ee">
+        <dc:Bounds x="1330" y="150" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_18xj2zi_di" bpmnElement="Gateway_18xj2zi" isMarkerVisible="true">
+        <dc:Bounds x="1475" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1exwcdt_di" bpmnElement="Gateway_1exwcdt" isMarkerVisible="true">
+        <dc:Bounds x="1565" y="325" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_06pug5z_di" bpmnElement="Event_06pug5z">
+        <dc:Bounds x="1682" y="332" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1jbm0u0_di" bpmnElement="Event_0l4fayv">
+        <dc:Bounds x="1482" y="172" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0jrvfpe_di" bpmnElement="Event_1xxg6ja">
+        <dc:Bounds x="1392" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_11pa87f_di" bpmnElement="Event_098ex71">
+        <dc:Bounds x="1482" y="332" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0i8ss66_di" bpmnElement="Event_0z78cke">
+        <dc:Bounds x="552" y="332" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="530" y="375" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_07gyw2t_di" bpmnElement="Activity_0p3xw1t">
+        <dc:Bounds x="290" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1cvg4um_di" bpmnElement="TextAnnotation_1cvg4um">
+        <dc:Bounds x="1288" y="104" width="170" height="40" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_15p25x8_di" bpmnElement="Association_15p25x8">
+        <di:waypoint x="1260" y="162" />
+        <di:waypoint x="1293" y="144" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

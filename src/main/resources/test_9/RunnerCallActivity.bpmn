@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_07dhi7l" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.2.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
+  <bpmn:collaboration id="Collaboration_1i8949p">
+    <bpmn:participant id="Participant_002pm2l" name="RunnerCallActivity" processRef="RunnerCallActivity" />
+  </bpmn:collaboration>
+  <bpmn:process id="RunnerCallActivity" name="RunnerCallActivity" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0588yci</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0588yci" sourceRef="StartEvent_1" targetRef="Activity_17g2et4" />
+    <bpmn:sequenceFlow id="Flow_0tyvjxt" sourceRef="Activity_17g2et4" targetRef="Event_1w7jou7" />
+    <bpmn:sequenceFlow id="Flow_14wshcc" sourceRef="Event_1w7jou7" targetRef="Event_1ot9cgu" />
+    <bpmn:intermediateCatchEvent id="Event_1w7jou7">
+      <bpmn:incoming>Flow_0tyvjxt</bpmn:incoming>
+      <bpmn:outgoing>Flow_14wshcc</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1ml5ibl">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT1H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="Event_1ot9cgu">
+      <bpmn:incoming>Flow_14wshcc</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:callActivity id="Activity_17g2et4" name="RunCallActivity" calledElement="paysrv_checkPaymentStatus">
+      <bpmn:extensionElements>
+        <camunda:in source="uuidInvoice" target="uuidInvoice" />
+        <camunda:out source="descriptionError" target="descriptionError" />
+        <camunda:out source="codeError" target="codeError" />
+        <camunda:out source="payeeBankCorr" target="payeeBankCorr" />
+        <camunda:out source="payeeBankAcc" target="payeeBankAcc" />
+        <camunda:out source="payeeBankName" target="payeeBankName" />
+        <camunda:out source="payeeBankBiC" target="payeeBankBiC" />
+        <camunda:out source="payeeKpp" target="payeeKpp" />
+        <camunda:out source="payeeInn" target="payeeInn" />
+        <camunda:out source="payeeName" target="payeeName" />
+        <camunda:out source="payerBankCorr" target="payerBankCorr" />
+        <camunda:out source="payerBankAcc" target="payerBankAcc" />
+        <camunda:out source="payerBankName" target="payerBankName" />
+        <camunda:out source="payerBankBiC" target="payerBankBiC" />
+        <camunda:out source="payerKpp" target="payerKpp" />
+        <camunda:out source="payerInn" target="payerInn" />
+        <camunda:out source="payerName" target="payerName" />
+        <camunda:out source="paymentDate" target="paymentDate" />
+        <camunda:out source="operationId" target="operationId" />
+        <camunda:out source="purpose" target="purpose" />
+        <camunda:out source="currency" target="currency" />
+        <camunda:out source="amount" target="amount" />
+        <camunda:out source="invoiceId" target="invoiceId" />
+        <camunda:out source="validityPeriod" target="validityPeriod" />
+        <camunda:out source="status" target="status" />
+        <camunda:out source="uuidInvoice" target="uuidInvoice" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0588yci</bpmn:incoming>
+      <bpmn:outgoing>Flow_0tyvjxt</bpmn:outgoing>
+    </bpmn:callActivity>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1i8949p">
+      <bpmndi:BPMNShape id="Participant_002pm2l_di" bpmnElement="Participant_002pm2l" isHorizontal="true">
+        <dc:Bounds x="120" y="79" width="500" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_14wshcc_di" bpmnElement="Flow_14wshcc">
+        <di:waypoint x="478" y="200" />
+        <di:waypoint x="532" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tyvjxt_di" bpmnElement="Flow_0tyvjxt">
+        <di:waypoint x="380" y="200" />
+        <di:waypoint x="442" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0588yci_di" bpmnElement="Flow_0588yci">
+        <di:waypoint x="228" y="200" />
+        <di:waypoint x="280" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="192" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_17y0ufa_di" bpmnElement="Event_1w7jou7">
+        <dc:Bounds x="442" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ot9cgu_di" bpmnElement="Event_1ot9cgu">
+        <dc:Bounds x="532" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0jliz1s_di" bpmnElement="Activity_17g2et4">
+        <dc:Bounds x="280" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
